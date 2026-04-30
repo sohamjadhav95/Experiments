@@ -25,6 +25,10 @@ AGENTS = {
         "model": "mistralai/mistral-large-3-675b-instruct-2512",
         "key":   NVIDIA_API_KEY,
     },
+    "summarizer": {
+        "model": "openai/gpt-oss-20b",
+        "key":   NVIDIA_API_KEY,
+    },
 }
 
 # ── Prompts ──────────────────────────────────────────────────────────────────
@@ -126,8 +130,16 @@ OUTPUT FORMAT (follow exactly):
 
 4. WHAT NEEDS FURTHER EVIDENCE
 [Empirical or theoretical work that would settle remaining disputes]""",
-}
+    "summarizer": """ROLE: Summarizer
 
+TASK: Summarize the provided argument in exactly 2 to 3 concise sentences.
+
+RULES:
+- Do not add introductory or concluding remarks.
+- Focus on the core argument, stance, and main points.
+- Keep the language simple and easy to read.
+- Produce exactly 2 to 3 sentences."""
+}
 
 # ── Request Schema ───────────────────────────────────────────────────────────
 class DebateRequest(BaseModel):
@@ -141,7 +153,7 @@ class DebateRequest(BaseModel):
 # ── Core streaming helper ────────────────────────────────────────────────────
 async def stream_nvidia(agent_type: str, messages: list, temp: float, top_p: float):
     """Async generator that yields text tokens from NVIDIA API."""
-    cfg = AGENTS["challenger"] if agent_type == "challenger" else AGENTS["proposer"]
+    cfg = AGENTS.get(agent_type, AGENTS["proposer"])
     headers = {
         "Authorization": f"Bearer {cfg['key']}",
         "Content-Type":  "application/json",
@@ -224,6 +236,19 @@ async def debate_generator(req: DebateRequest):
             yield sse({"type": "proposer_done", "round": r, "full": full_p})
             last_proposer = full_p
             proposer_history.append(full_p)
+            
+            # Summarize Proposer
+            yield sse({"type": "summary_start", "agent": "p", "round": r})
+            sum_msgs = [
+                {"role": "system", "content": PROMPTS["summarizer"]},
+                {"role": "user", "content": full_p}
+            ]
+            full_p_sum = ""
+            async for tok in stream_nvidia("summarizer", sum_msgs, 1.0, 1.0):
+                full_p_sum += tok
+                yield sse({"type": "summary_chunk", "agent": "p", "round": r, "content": tok})
+            yield sse({"type": "summary_done", "agent": "p", "round": r, "full": full_p_sum})
+
 
             # Repetition check
             if is_repetitive(proposer_history):
@@ -249,6 +274,18 @@ async def debate_generator(req: DebateRequest):
             yield sse({"type": "challenger_done", "round": r, "full": full_c})
             last_challenger = full_c
             challenger_history.append(full_c)
+            
+            # Summarize Challenger
+            yield sse({"type": "summary_start", "agent": "c", "round": r})
+            sum_msgs = [
+                {"role": "system", "content": PROMPTS["summarizer"]},
+                {"role": "user", "content": full_c}
+            ]
+            full_c_sum = ""
+            async for tok in stream_nvidia("summarizer", sum_msgs, 1.0, 1.0):
+                full_c_sum += tok
+                yield sse({"type": "summary_chunk", "agent": "c", "round": r, "content": tok})
+            yield sse({"type": "summary_done", "agent": "c", "round": r, "full": full_c_sum})
 
         # ── Judge synthesis ──────────────────────────────────────────────────
         yield sse({"type": "judge_start"})

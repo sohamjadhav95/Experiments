@@ -229,6 +229,19 @@
     .n-warn { background: var(--j-dim); border: 1px solid #5c4010; color: var(--j); }
     .n-err  { background: #2a0a0a; border: 1px solid #6b1a1a; color: #f87171; }
 
+    .summary-box {
+      margin-top: 14px; padding: 12px 14px;
+      background: rgba(0,0,0,0.2); border-radius: 4px;
+      border-left: 2px solid var(--muted);
+    }
+    .summary-box .sum-title {
+      font-size: 9px; font-weight: 700; color: var(--muted);
+      margin-bottom: 6px; letter-spacing: 1px;
+    }
+    .summary-box pre {
+      font-size: 11px; line-height: 1.6; color: var(--text2);
+    }
+
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
   </style>
@@ -377,7 +390,16 @@
     el.scrollIntoView({ behavior: 'smooth', block: 'end' });
     return {
       append: tok  => { $(`pre-${id}`).textContent += tok; },
-      done:   ()   => { $(`sp-${id}`)?.remove(); $(`pre-${id}`).classList.remove('streaming'); }
+      done:   ()   => { $(`sp-${id}`)?.remove(); $(`pre-${id}`).classList.remove('streaming'); },
+      startSummary: () => {
+        const sumDiv = document.createElement('div');
+        sumDiv.className = 'summary-box';
+        sumDiv.innerHTML = `<div class="sum-title">✦ SUMMARY</div><pre class="streaming" id="sum-${id}"></pre>`;
+        $(`pre-${id}`).parentNode.appendChild(sumDiv);
+        el.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      },
+      appendSummary: tok => { $(`sum-${id}`).textContent += tok; },
+      doneSummary: () => { $(`sum-${id}`)?.classList.remove('streaming'); }
     };
   }
 
@@ -512,6 +534,19 @@
       case 'challenger_done':
         cards[`c-${ev.round}`]?.done();
         transcript += `${'─'.repeat(60)}\nROUND ${ev.round} — CHALLENGER\n${'─'.repeat(60)}\n${ev.full}\n\n`;
+        break;
+
+      case 'summary_start':
+        cards[`${ev.agent}-${ev.round}`]?.startSummary();
+        break;
+
+      case 'summary_chunk':
+        cards[`${ev.agent}-${ev.round}`]?.appendSummary(ev.content);
+        break;
+
+      case 'summary_done':
+        cards[`${ev.agent}-${ev.round}`]?.doneSummary();
+        transcript += `[SUMMARY]: ${ev.full}\n\n`;
         break;
 
       case 'early_stop':
