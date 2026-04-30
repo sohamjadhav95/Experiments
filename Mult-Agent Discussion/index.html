@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dialectic Engine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,700;0,900;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:      #09090c;
+      --surface: #0f0f14;
+      --s2:      #16161e;
+      --border:  #24242f;
+      --b2:      #1e1e28;
+      --p:       #5ba4f5;  --p-dim: #142240;  --p-glow: rgba(91,164,245,.12);
+      --c:       #f56b4d;  --c-dim: #3a1208;  --c-glow: rgba(245,107,77,.12);
+      --j:       #f0c040;  --j-dim: #3a2c08;  --j-glow: rgba(240,192,64,.10);
+      --text:    #dcdce8;
+      --text2:   #9090a8;
+      --muted:   #555568;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: 'Space Mono', monospace; font-size: 13px;
+      min-height: 100vh; overflow-x: hidden;
+    }
+
+    /* ── Header ── */
+    .hdr {
+      border-bottom: 1px solid var(--border);
+      padding: 18px 28px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 200;
+      background: rgba(9,9,12,.96); backdrop-filter: blur(12px);
+    }
+    .hdr-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px; font-weight: 900; letter-spacing: -.5px;
+    }
+    .hdr-title .tp { color: var(--p); }
+    .hdr-title .tc { color: var(--c); }
+
+    .pill {
+      font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+      text-transform: uppercase; padding: 4px 12px; border-radius: 20px;
+    }
+    .s-idle { background: var(--s2); color: var(--muted); border: 1px solid var(--border); }
+    .s-run  { background: #0d2818; color: #4ade80; border: 1px solid #1e5030; animation: gp 2s infinite; }
+    .s-done { background: var(--j-dim); color: var(--j); border: 1px solid #5c4010; }
+    .s-stop { background: #2a1010; color: #f87171; border: 1px solid #5c1c1c; }
+    @keyframes gp { 0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,0)} 50%{box-shadow:0 0 8px 2px rgba(74,222,128,.15)} }
+
+    /* ── Layout ── */
+    .layout {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      min-height: calc(100vh - 61px);
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      border-right: 1px solid var(--border);
+      padding: 24px 20px;
+      display: flex; flex-direction: column; gap: 22px;
+      position: sticky; top: 61px;
+      height: calc(100vh - 61px); overflow-y: auto;
+      background: var(--surface);
+    }
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .sec { font-size: 9px; font-weight: 700; letter-spacing: 2.5px;
+           text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+
+    textarea {
+      width: 100%; background: var(--s2); border: 1px solid var(--border);
+      color: var(--text); font-family: 'Space Mono', monospace; font-size: 11px;
+      padding: 10px 12px; border-radius: 4px; outline: none;
+      resize: vertical; min-height: 80px; line-height: 1.7;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    textarea:focus { border-color: var(--p); box-shadow: 0 0 0 3px var(--p-glow); }
+
+    .chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+    .chip {
+      font-size: 9px; padding: 3px 8px; border-radius: 2px;
+      border: 1px solid var(--b2); cursor: pointer; color: var(--muted);
+      transition: all .15s; line-height: 1.5; background: transparent;
+    }
+    .chip:hover { border-color: var(--p); color: var(--p); background: var(--p-glow); }
+
+    .rounds-row { display: flex; align-items: center; gap: 14px; }
+    input[type="range"] {
+      flex: 1; -webkit-appearance: none; height: 3px;
+      background: var(--border); border-radius: 2px; outline: none; cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 14px; height: 14px;
+      background: var(--p); border-radius: 50%;
+      box-shadow: 0 0 6px var(--p-glow); cursor: pointer;
+    }
+    .rnum {
+      font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 900;
+      color: var(--p); min-width: 28px; text-align: center;
+    }
+
+    .agent-row {
+      display: flex; align-items: center; gap: 10px; padding: 9px 11px;
+      border: 1px solid var(--b2); border-radius: 4px; margin-bottom: 7px;
+    }
+    .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .dp  { background: var(--p); box-shadow: 0 0 5px var(--p); }
+    .dc  { background: var(--c); box-shadow: 0 0 5px var(--c); }
+    .dj  { background: var(--j); box-shadow: 0 0 5px var(--j); }
+    .aname { font-size: 10px; font-weight: 700; margin-bottom: 2px; }
+    .amodel { font-size: 9px; color: var(--muted); }
+    .cp { color: var(--p); } .cc { color: var(--c); } .cj { color: var(--j); }
+
+    .trow { display: flex; flex-direction: column; gap: 8px; }
+    .titem label {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 10px; color: var(--text2); margin-bottom: 5px;
+    }
+    .tv { font-weight: 700; font-size: 11px; }
+
+    .hr { height: 1px; background: var(--b2); }
+    .actions { display: flex; flex-direction: column; gap: 7px; margin-top: auto; }
+
+    .btn {
+      width: 100%; padding: 12px; border-radius: 4px; cursor: pointer;
+      font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700;
+      letter-spacing: 1.5px; text-transform: uppercase; transition: all .2s;
+      border: none;
+    }
+    .btn-start { background: var(--p); color: #060810; }
+    .btn-start:hover:not(:disabled) { background: #7ec0ff; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(91,164,245,.3); }
+    .btn-start:disabled { opacity: .35; cursor: not-allowed; }
+
+    .btn-stop  { background: transparent; color: var(--c); border: 1px solid var(--c); display: none; }
+    .btn-stop:hover { background: var(--c-dim); }
+
+    .btn-copy  { background: var(--s2); color: var(--text2); border: 1px solid var(--border); display: none; }
+    .btn-copy:hover { border-color: var(--j); color: var(--j); }
+
+    .btn-reset { background: transparent; color: var(--muted); border: 1px solid var(--b2); padding: 8px; }
+    .btn-reset:hover { color: var(--text2); border-color: var(--border); }
+
+    /* ── Arena ── */
+    .arena { padding: 32px 36px; display: flex; flex-direction: column; }
+
+    .empty {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 20px; text-align: center; padding: 60px; opacity: .7;
+    }
+    .empty-icon { font-size: 52px; opacity: .25; }
+    .empty h2 {
+      font-family: 'Playfair Display', serif; font-size: 22px;
+      font-style: italic; font-weight: 400; color: var(--text2);
+    }
+    .empty p { font-size: 11px; color: var(--muted); line-height: 2; max-width: 340px; }
+    .empty .hint {
+      font-size: 10px; color: var(--border); border: 1px solid var(--b2);
+      padding: 6px 14px; border-radius: 3px;
+    }
+
+    .prog-wrap { margin-bottom: 28px; display: none; }
+    .prog-meta { font-size: 9px; color: var(--muted); margin-bottom: 6px;
+                 display: flex; justify-content: space-between; }
+    .prog-track { height: 2px; background: var(--border); border-radius: 1px; overflow: hidden; }
+    .prog-fill {
+      height: 100%; border-radius: 1px; width: 0%;
+      background: linear-gradient(90deg, var(--p) 0%, var(--c) 60%, var(--j) 100%);
+      transition: width .6s cubic-bezier(.4,0,.2,1);
+    }
+
+    .rdiv { display: flex; align-items: center; gap: 14px; margin: 8px 0 20px; }
+    .rline { flex: 1; height: 1px; background: var(--b2); }
+    .rlabel { font-size: 9px; font-weight: 700; letter-spacing: 2px;
+              text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+
+    .dcard {
+      border: 1px solid var(--border); border-radius: 6px; margin-bottom: 14px;
+      overflow: hidden; background: var(--surface);
+      animation: cardIn .35s cubic-bezier(.2,0,.1,1);
+    }
+    @keyframes cardIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+    .dcard-p { border-left: 3px solid var(--p); background: linear-gradient(100deg, var(--p-glow) 0%, transparent 35%); }
+    .dcard-c { border-left: 3px solid var(--c); background: linear-gradient(100deg, var(--c-glow) 0%, transparent 35%); }
+    .dcard-j { border-left: 3px solid var(--j); background: linear-gradient(100deg, var(--j-glow) 0%, transparent 35%); margin-top: 8px; }
+
+    .card-head {
+      padding: 10px 14px; display: flex; align-items: center; gap: 10px;
+      border-bottom: 1px solid var(--b2);
+    }
+    .badge { font-size: 9px; font-weight: 700; letter-spacing: 1.5px;
+             text-transform: uppercase; padding: 3px 9px; border-radius: 2px; }
+    .badge-p { background: var(--p-dim); color: var(--p); }
+    .badge-c { background: var(--c-dim); color: var(--c); }
+    .badge-j { background: var(--j-dim); color: var(--j); }
+    .card-model { font-size: 9px; color: var(--muted); }
+
+    .spinner { margin-left: auto; display: flex; gap: 3px; align-items: center; }
+    .spinner span {
+      display: inline-block; width: 4px; height: 4px;
+      background: var(--muted); border-radius: 50%;
+      animation: sb 1.1s ease-in-out infinite;
+    }
+    .spinner span:nth-child(2){animation-delay:.18s} .spinner span:nth-child(3){animation-delay:.36s}
+    @keyframes sb { 0%,80%,100%{transform:scale(.7);opacity:.4} 40%{transform:scale(1.15);opacity:1} }
+
+    .card-body { padding: 16px; }
+    .card-body pre {
+      white-space: pre-wrap; word-break: break-word;
+      font-family: 'Space Mono', monospace; font-size: 11.5px; line-height: 1.85;
+    }
+
+    .streaming::after { content: '▊'; animation: blink .75s step-end infinite; }
+    .dcard-p .streaming::after { color: var(--p); }
+    .dcard-c .streaming::after { color: var(--c); }
+    .dcard-j .streaming::after { color: var(--j); }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    .notice { display:flex; align-items:flex-start; gap:10px; padding:11px 14px;
+              border-radius:4px; font-size:11px; margin-bottom:14px;
+              animation: cardIn .3s ease; }
+    .n-warn { background: var(--j-dim); border: 1px solid #5c4010; color: var(--j); }
+    .n-err  { background: #2a0a0a; border: 1px solid #6b1a1a; color: #f87171; }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-title">
+    ⚔ <span class="tp">Proposer</span> vs <span class="tc">Challenger</span>
+    <span style="color:var(--muted);font-weight:400;font-size:14px;font-style:italic;"> — Dialectic Engine</span>
+  </div>
+  <span id="statusPill" class="pill s-idle">IDLE</span>
+</header>
+
+<div class="layout">
+
+  <aside class="sidebar">
+
+    <div>
+      <div class="sec">Topic / Thesis</div>
+      <textarea id="topic" placeholder="Enter the debate topic or a thesis statement...">Are current LLMs genuinely reasoning or merely pattern matching?</textarea>
+      <div class="chips">
+        <span class="chip" onclick="setTopic('Is consciousness computable?')">Consciousness computable?</span>
+        <span class="chip" onclick="setTopic('Will AGI emerge from scaling alone?')">AGI from scaling?</span>
+        <span class="chip" onclick="setTopic('Is free will an illusion?')">Free will illusion?</span>
+        <span class="chip" onclick="setTopic('Can markets self-regulate without state intervention?')">Markets vs state</span>
+        <span class="chip" onclick="setTopic('Is open-source AI development net positive for humanity?')">Open-source AI risk</span>
+      </div>
+    </div>
+
+    <div>
+      <div class="sec">Rounds</div>
+      <div class="rounds-row">
+        <input type="range" id="rounds" min="2" max="5" value="3"
+               oninput="document.getElementById('rnum').textContent=this.value">
+        <div class="rnum" id="rnum">3</div>
+      </div>
+      <div style="font-size:9px;color:var(--muted);margin-top:6px;line-height:1.7;">
+        Each round = Proposer argues → Challenger attacks<br>Judge synthesizes at the end
+      </div>
+    </div>
+
+    <div class="hr"></div>
+
+    <div>
+      <div class="sec">Agents</div>
+      <div class="agent-row"><div class="dot dp"></div><div><div class="aname cp">A — Proposer</div><div class="amodel">llama-3.3-nemotron-super-49b</div></div></div>
+      <div class="agent-row"><div class="dot dc"></div><div><div class="aname cc">B — Challenger</div><div class="amodel">mistral-large-3-675b</div></div></div>
+      <div class="agent-row"><div class="dot dj"></div><div><div class="aname cj">Judge — Synthesizer</div><div class="amodel">llama-3.3-nemotron (low-temp)</div></div></div>
+    </div>
+
+    <div class="hr"></div>
+
+    <div>
+      <div class="sec">Temperature</div>
+      <div class="trow">
+        <div class="titem">
+          <label>Proposer <span class="tv cp" id="tvP">0.70</span></label>
+          <input type="range" id="slP" min="40" max="90" value="70"
+                 oninput="document.getElementById('tvP').textContent=(this.value/100).toFixed(2)">
+        </div>
+        <div class="titem">
+          <label>Challenger <span class="tv cc" id="tvC">0.30</span></label>
+          <input type="range" id="slC" min="10" max="50" value="30"
+                 oninput="document.getElementById('tvC').textContent=(this.value/100).toFixed(2)">
+        </div>
+        <div class="titem">
+          <label>Judge <span class="tv cj" id="tvJ">0.10</span></label>
+          <input type="range" id="slJ" min="5" max="25" value="10"
+                 oninput="document.getElementById('tvJ').textContent=(this.value/100).toFixed(2)">
+        </div>
+      </div>
+    </div>
+
+    <div class="hr"></div>
+
+    <div class="actions">
+      <button class="btn btn-start" id="btnStart" onclick="startDebate()">▶ Start Debate</button>
+      <button class="btn btn-stop"  id="btnStop"  onclick="stopDebate()">■ Stop</button>
+      <button class="btn btn-copy"  id="btnCopy"  onclick="copyTranscript()">⎘ Copy Transcript</button>
+      <button class="btn btn-reset"               onclick="resetArena()">↺ Reset</button>
+    </div>
+
+  </aside>
+
+  <main class="arena" id="arena">
+
+    <div id="empty" class="empty">
+      <div class="empty-icon">⚔</div>
+      <h2>"Strong minds disagree well."</h2>
+      <p>Two LLMs argue a topic through structured rounds of challenge and refinement, ending in a synthesized conclusion.</p>
+      <div class="hint">← Configure topic · Set rounds · Hit Start</div>
+    </div>
+
+    <div id="progWrap" class="prog-wrap">
+      <div class="prog-meta">
+        <span id="progLabel">Initializing...</span>
+        <span id="progPct">0%</span>
+      </div>
+      <div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
+    </div>
+
+    <div id="content"></div>
+
+  </main>
+</div>
+
+<script>
+  const API = "";   // same origin — FastAPI serves this HTML at /
+  let reader = null, transcript = "";
+
+  const $ = id => document.getElementById(id);
+
+  function setTopic(t) { $('topic').value = t; }
+
+  function setStatus(s, t) {
+    const p = $('statusPill');
+    p.className = 'pill s-' + s;
+    p.textContent = t || s.toUpperCase();
+  }
+
+  function setProgress(pct, label) {
+    $('progFill').style.width = pct + '%';
+    $('progPct').textContent  = Math.round(pct) + '%';
+    if (label) $('progLabel').textContent = label;
+  }
+
+  // ── Card factory ────────────────────────────────────────────────────────────
+  let seq = 0;
+  function createCard(type, badge, model) {
+    const id = 'c' + (++seq);
+    const el = document.createElement('div');
+    el.className = `dcard dcard-${type}`;
+    el.innerHTML = `
+      <div class="card-head">
+        <span class="badge badge-${type}">${badge}</span>
+        <span class="card-model">${model}</span>
+        <span class="spinner" id="sp-${id}">
+          <span></span><span></span><span></span>
+        </span>
+      </div>
+      <div class="card-body">
+        <pre class="streaming" id="pre-${id}"></pre>
+      </div>`;
+    $('content').appendChild(el);
+    el.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    return {
+      append: tok  => { $(`pre-${id}`).textContent += tok; },
+      done:   ()   => { $(`sp-${id}`)?.remove(); $(`pre-${id}`).classList.remove('streaming'); }
+    };
+  }
+
+  function divider(label) {
+    const d = document.createElement('div');
+    d.className = 'rdiv';
+    d.innerHTML = `<div class="rline"></div><div class="rlabel">${label}</div><div class="rline"></div>`;
+    $('content').appendChild(d);
+  }
+
+  function notice(cls, html) {
+    const d = document.createElement('div');
+    d.className = 'notice ' + cls;
+    d.innerHTML = html;
+    $('content').appendChild(d);
+  }
+
+  // ── Debate state machine ─────────────────────────────────────────────────────
+  const rounds_total = () => parseInt($('rounds').value);
+  let totalSteps = 0, stepsDone = 0;
+  let cards = {};      // keyed by "p-{round}" | "c-{round}" | "j"
+
+  function nextStep(label) {
+    stepsDone++;
+    setProgress(Math.min(95, (stepsDone / totalSteps) * 95), label);
+  }
+
+  // ── Main start ───────────────────────────────────────────────────────────────
+  async function startDebate() {
+    const topic = $('topic').value.trim();
+    if (!topic) { alert('Enter a topic.'); return; }
+
+    const rounds = parseInt($('rounds').value);
+    totalSteps = rounds * 2 + 1;
+    stepsDone  = 0;
+    transcript = `DEBATE TOPIC\n${'═'.repeat(60)}\n${topic}\n\n`;
+
+    $('empty').style.display    = 'none';
+    $('progWrap').style.display = 'block';
+    $('content').innerHTML      = '';
+    $('btnStart').disabled      = true;
+    $('btnStop').style.display  = 'block';
+    $('btnCopy').style.display  = 'none';
+    cards = {};
+    setStatus('run', 'RUNNING');
+    setProgress(2, 'Connecting...');
+
+    const body = {
+      topic,
+      rounds,
+      temp_proposer:   parseFloat($('slP').value) / 100,
+      temp_challenger: parseFloat($('slC').value) / 100,
+      temp_judge:      parseFloat($('slJ').value) / 100,
+    };
+
+    try {
+      const res = await fetch(`${API}/debate`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(body),
+      });
+
+      if (!res.ok) {
+        const t = await res.text();
+        notice('n-err', '⚠ Server error ' + res.status + ': ' + t);
+        return;
+      }
+
+      reader = res.body.getReader();
+      const dec = new TextDecoder();
+      let buf = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buf += dec.decode(value, { stream: true });
+        const lines = buf.split('\n');
+        buf = lines.pop();
+
+        for (const raw of lines) {
+          const line = raw.trim();
+          if (!line.startsWith('data:')) continue;
+          try {
+            const ev = JSON.parse(line.slice(5).trim());
+            handleEvent(ev);
+          } catch (_) {}
+        }
+      }
+
+    } catch (e) {
+      if (!e.message.includes('abort')) notice('n-err', '⚠ ' + e.message);
+    } finally {
+      $('btnStart').disabled     = false;
+      $('btnStop').style.display = 'none';
+      $('btnCopy').style.display = 'block';
+    }
+  }
+
+  // ── SSE event handler ────────────────────────────────────────────────────────
+  function handleEvent(ev) {
+    switch (ev.type) {
+
+      case 'round_start': {
+        const r = ev.round;
+        const lbl = r === 1 ? 'Opening — Round 1' : `Round ${r} — Refinement`;
+        divider(lbl);
+        nextStep(`Round ${r} — Proposer thinking...`);
+
+        // Pre-create both cards for this round
+        cards[`p-${r}`] = createCard('p',
+          r === 1 ? 'A — INITIAL POSITION' : 'A — DEFENSE + REFINEMENT',
+          'Llama-3.3-Nemotron-49B');
+        break;
+      }
+
+      case 'proposer_chunk':
+        cards[`p-${ev.round}`]?.append(ev.content);
+        break;
+
+      case 'proposer_done':
+        cards[`p-${ev.round}`]?.done();
+        transcript += `${'─'.repeat(60)}\nROUND ${ev.round} — PROPOSER\n${'─'.repeat(60)}\n${ev.full}\n\n`;
+        nextStep(`Round ${ev.round} — Challenger attacking...`);
+        cards[`c-${ev.round}`] = createCard('c', 'B — CRITIQUE & ATTACK', 'Mistral-Large-3-675B');
+        break;
+
+      case 'challenger_chunk':
+        cards[`c-${ev.round}`]?.append(ev.content);
+        break;
+
+      case 'challenger_done':
+        cards[`c-${ev.round}`]?.done();
+        transcript += `${'─'.repeat(60)}\nROUND ${ev.round} — CHALLENGER\n${'─'.repeat(60)}\n${ev.full}\n\n`;
+        break;
+
+      case 'early_stop':
+        notice('n-warn', `⚡ <strong>Early convergence:</strong> ${ev.reason}`);
+        break;
+
+      case 'judge_start':
+        divider('⚖ Final Synthesis — Judge');
+        setProgress(93, 'Judge synthesizing...');
+        cards['j'] = createCard('j', 'JUDGE — SYNTHESIS', 'Llama-3.3-Nemotron (low-temp)');
+        break;
+
+      case 'judge_chunk':
+        cards['j']?.append(ev.content);
+        break;
+
+      case 'judge_done':
+        cards['j']?.done();
+        transcript += `${'═'.repeat(60)}\nFINAL SYNTHESIS\n${'═'.repeat(60)}\n${ev.full}\n`;
+        break;
+
+      case 'debate_done':
+        setProgress(100, 'Complete');
+        setStatus('done', 'DONE');
+        break;
+
+      case 'error':
+        notice('n-err', '⚠ ' + ev.message);
+        setStatus('idle');
+        break;
+    }
+  }
+
+  function stopDebate() {
+    reader?.cancel();
+    setStatus('stop', 'STOPPED');
+    $('btnStart').disabled     = false;
+    $('btnStop').style.display = 'none';
+    $('btnCopy').style.display = 'block';
+  }
+
+  function resetArena() {
+    reader?.cancel();
+    $('content').innerHTML      = '';
+    $('empty').style.display    = 'flex';
+    $('progWrap').style.display = 'none';
+    $('btnCopy').style.display  = 'none';
+    $('btnStart').disabled      = false;
+    $('btnStop').style.display  = 'none';
+    setProgress(0, ''); setStatus('idle');
+    transcript = '';
+  }
+
+  function copyTranscript() {
+    navigator.clipboard.writeText(transcript).then(() => {
+      $('btnCopy').textContent = '✓ Copied!';
+      setTimeout(() => { $('btnCopy').textContent = '⎘ Copy Transcript'; }, 2500);
+    });
+  }
+</script>
+</body>
+</html>
