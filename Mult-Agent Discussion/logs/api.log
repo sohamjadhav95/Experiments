@@ -1,0 +1,75 @@
+2026-04-30 12:55:20,809 - api - DEBUG - Starting API request for agent 'proposer' using model 'nvidia/llama-3.3-nemotron-super-49b-v1.5'
+2026-04-30 12:55:43,697 - api - WARNING - Failed to parse chunk from NVIDIA API: list index out of range
+2026-04-30 12:55:43,699 - api - DEBUG - Finished API request for agent 'proposer'
+2026-04-30 12:55:43,700 - api - DEBUG - Starting API request for agent 'summarizer' using model 'openai/gpt-oss-20b'
+2026-04-30 12:55:45,469 - api - WARNING - Failed to parse chunk from NVIDIA API: list index out of range
+2026-04-30 12:55:45,472 - api - DEBUG - Finished API request for agent 'summarizer'
+2026-04-30 12:55:45,472 - api - DEBUG - Starting API request for agent 'challenger' using model 'mistralai/mistral-large-3-675b-instruct-2512'
+2026-04-30 13:01:33,846 - api - ERROR - HTTP error connecting to NVIDIA API for agent 'challenger': peer closed connection without sending complete message body (incomplete chunked read)
+2026-04-30 13:01:33,846 - api - DEBUG - Finished API request for agent 'challenger'
+2026-04-30 13:04:50,708 - api - DEBUG - Starting API request for agent 'proposer' using model 'nvidia/llama-3.3-nemotron-super-49b-v1.5'
+2026-04-30 13:06:18,632 - api - WARNING - Failed to parse chunk from NVIDIA API: list index out of range
+2026-04-30 13:06:18,635 - api - DEBUG - Finished API request for agent 'proposer'
+2026-04-30 13:06:18,636 - api - DEBUG - Starting API request for agent 'summarizer' using model 'openai/gpt-oss-20b'
+2026-04-30 13:06:20,143 - api - WARNING - Failed to parse chunk from NVIDIA API: list index out of range
+2026-04-30 13:06:20,145 - api - DEBUG - Finished API request for agent 'summarizer'
+2026-04-30 13:06:20,145 - api - DEBUG - Starting API request for agent 'challenger' using model 'mistralai/mixtral-8x22b-instruct-v0.1'
+2026-04-30 13:06:25,135 - api - WARNING - Failed to parse chunk from NVIDIA API: list index out of range
+2026-04-30 13:06:25,136 - api - DEBUG - Finished API request for agent 'challenger'
+2026-04-30 13:06:25,136 - api - DEBUG - Starting API request for agent 'summarizer' using model 'openai/gpt-oss-20b'
+2026-04-30 13:06:26,209 - api - WARNING - Failed to parse chunk from NVIDIA API: list index out of range
+2026-04-30 13:06:26,211 - api - DEBUG - Finished API request for agent 'summarizer'
+2026-04-30 13:06:26,212 - api - DEBUG - Starting API request for agent 'proposer' using model 'nvidia/llama-3.3-nemotron-super-49b-v1.5'
+2026-04-30 13:06:57,112 - api - DEBUG - Finished API request for agent 'proposer'
+2026-04-30 13:07:02,748 - api - DEBUG - Starting API request for agent 'proposer' using model 'nvidia/llama-3.3-nemotron-super-49b-v1.5'
+2026-04-30 13:08:05,032 - api - WARNING - Failed to parse chunk from NVIDIA API: list index out of range
+2026-04-30 13:08:05,035 - api - DEBUG - Finished API request for agent 'proposer'
+2026-04-30 13:08:05,036 - api - DEBUG - Starting API request for agent 'summarizer' using model 'openai/gpt-oss-20b'
+2026-04-30 13:08:06,934 - api - WARNING - Failed to parse chunk from NVIDIA API: list index out of range
+2026-04-30 13:08:06,936 - api - DEBUG - Finished API request for agent 'summarizer'
+2026-04-30 13:08:06,936 - api - DEBUG - Starting API request for agent 'challenger' using model 'mistralai/mixtral-8x22b-instruct-v0.1'
+2026-04-30 13:08:12,889 - api - WARNING - Failed to parse chunk from NVIDIA API: list index out of range
+2026-04-30 13:08:12,892 - api - DEBUG - Finished API request for agent 'challenger'
+2026-04-30 13:08:12,893 - api - DEBUG - Starting API request for agent 'summarizer' using model 'openai/gpt-oss-20b'
+2026-04-30 13:08:14,661 - api - WARNING - Failed to parse chunk from NVIDIA API: list index out of range
+2026-04-30 13:08:14,663 - api - DEBUG - Finished API request for agent 'summarizer'
+2026-04-30 13:08:14,663 - api - DEBUG - Starting API request for agent 'proposer' using model 'nvidia/llama-3.3-nemotron-super-49b-v1.5'
+2026-04-30 13:10:15,288 - api - DEBUG - Starting API request for agent 'proposer' using model 'google/gemma-4-31b-it'
+2026-04-30 13:10:50,905 - api - WARNING - Failed to parse chunk from NVIDIA API: list index out of range
+2026-04-30 13:10:50,907 - api - DEBUG - Finished API request for agent 'proposer'
+2026-04-30 13:10:50,908 - api - DEBUG - Starting API request for agent 'summarizer' using model 'openai/gpt-oss-20b'
+2026-04-30 13:10:52,272 - api - WARNING - Failed to parse chunk from NVIDIA API: list index out of range
+2026-04-30 13:10:52,275 - api - DEBUG - Finished API request for agent 'summarizer'
+2026-04-30 13:10:52,275 - api - DEBUG - Starting API request for agent 'challenger' using model 'openai/gpt-oss-120b'
+2026-04-30 13:11:00,756 - api - WARNING - Failed to parse chunk from NVIDIA API: list index out of range
+2026-04-30 13:11:00,760 - api - DEBUG - Finished API request for agent 'challenger'
+2026-04-30 13:11:00,761 - api - DEBUG - Starting API request for agent 'summarizer' using model 'openai/gpt-oss-20b'
+2026-04-30 13:11:02,846 - api - WARNING - Failed to parse chunk from NVIDIA API: list index out of range
+2026-04-30 13:11:02,850 - api - DEBUG - Finished API request for agent 'summarizer'
+2026-04-30 13:11:02,850 - api - DEBUG - Starting API request for agent 'proposer' using model 'google/gemma-4-31b-it'
+2026-04-30 13:12:28,669 - api - WARNING - Failed to parse chunk from NVIDIA API: list index out of range
+2026-04-30 13:12:28,672 - api - DEBUG - Finished API request for agent 'proposer'
+2026-04-30 13:12:28,673 - api - DEBUG - Starting API request for agent 'summarizer' using model 'openai/gpt-oss-20b'
+2026-04-30 13:12:30,692 - api - WARNING - Failed to parse chunk from NVIDIA API: list index out of range
+2026-04-30 13:12:30,694 - api - DEBUG - Finished API request for agent 'summarizer'
+2026-04-30 13:12:30,694 - api - DEBUG - Starting API request for agent 'challenger' using model 'openai/gpt-oss-120b'
+2026-04-30 13:12:39,593 - api - WARNING - Failed to parse chunk from NVIDIA API: list index out of range
+2026-04-30 13:12:39,596 - api - DEBUG - Finished API request for agent 'challenger'
+2026-04-30 13:12:39,597 - api - DEBUG - Starting API request for agent 'summarizer' using model 'openai/gpt-oss-20b'
+2026-04-30 13:12:41,097 - api - WARNING - Failed to parse chunk from NVIDIA API: list index out of range
+2026-04-30 13:12:41,099 - api - DEBUG - Finished API request for agent 'summarizer'
+2026-04-30 13:12:41,100 - api - DEBUG - Starting API request for agent 'proposer' using model 'google/gemma-4-31b-it'
+2026-04-30 13:14:44,510 - api - WARNING - Failed to parse chunk from NVIDIA API: list index out of range
+2026-04-30 13:14:44,512 - api - DEBUG - Finished API request for agent 'proposer'
+2026-04-30 13:14:44,512 - api - DEBUG - Starting API request for agent 'summarizer' using model 'openai/gpt-oss-20b'
+2026-04-30 13:14:45,808 - api - WARNING - Failed to parse chunk from NVIDIA API: list index out of range
+2026-04-30 13:14:45,810 - api - DEBUG - Finished API request for agent 'summarizer'
+2026-04-30 13:14:45,810 - api - DEBUG - Starting API request for agent 'challenger' using model 'openai/gpt-oss-120b'
+2026-04-30 13:14:52,573 - api - WARNING - Failed to parse chunk from NVIDIA API: list index out of range
+2026-04-30 13:14:52,575 - api - DEBUG - Finished API request for agent 'challenger'
+2026-04-30 13:14:52,576 - api - DEBUG - Starting API request for agent 'summarizer' using model 'openai/gpt-oss-20b'
+2026-04-30 13:14:54,402 - api - WARNING - Failed to parse chunk from NVIDIA API: list index out of range
+2026-04-30 13:14:54,404 - api - DEBUG - Finished API request for agent 'summarizer'
+2026-04-30 13:14:54,404 - api - DEBUG - Starting API request for agent 'proposer' using model 'google/gemma-4-31b-it'
+2026-04-30 13:16:04,538 - api - WARNING - Failed to parse chunk from NVIDIA API: list index out of range
+2026-04-30 13:16:04,539 - api - DEBUG - Finished API request for agent 'proposer'

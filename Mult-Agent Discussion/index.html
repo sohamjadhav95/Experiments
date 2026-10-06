@@ -289,7 +289,7 @@
     <div>
       <div class="sec">Agents</div>
       <div class="agent-row"><div class="dot dp"></div><div><div class="aname cp">A — Proposer</div><div class="amodel">llama-3.3-nemotron-super-49b</div></div></div>
-      <div class="agent-row"><div class="dot dc"></div><div><div class="aname cc">B — Challenger</div><div class="amodel">mistral-large-3-675b</div></div></div>
+      <div class="agent-row"><div class="dot dc"></div><div><div class="aname cc">B — Challenger</div><div class="amodel">mixtral-8x22b</div></div></div>
       <div class="agent-row"><div class="dot dj"></div><div><div class="aname cj">Judge — Synthesizer</div><div class="amodel">llama-3.3-nemotron (low-temp)</div></div></div>
     </div>
 
@@ -524,7 +524,7 @@
         cards[`p-${ev.round}`]?.done();
         transcript += `${'─'.repeat(60)}\nROUND ${ev.round} — PROPOSER\n${'─'.repeat(60)}\n${ev.full}\n\n`;
         nextStep(`Round ${ev.round} — Challenger attacking...`);
-        cards[`c-${ev.round}`] = createCard('c', 'B — CRITIQUE & ATTACK', 'Mistral-Large-3-675B');
+        cards[`c-${ev.round}`] = createCard('c', 'B — CRITIQUE & ATTACK', 'Mixtral-8x22B-Instruct');
         break;
 
       case 'challenger_chunk':

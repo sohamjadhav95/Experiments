@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from pathlib import Path
+from logging_config import app_logger, api_logger, debate_logger
 
 app = FastAPI(title="Dialectic Engine")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
@@ -18,11 +19,11 @@ NVIDIA_API_KEY = "nvapi-Ba01RUMIpsMzRMG-0E5kyhc0L95m8QnI_E2OMcta0dMI3BiE-9tSJ2FA
 
 AGENTS = {
     "proposer": {
-        "model": "nvidia/llama-3.3-nemotron-super-49b-v1.5",
+        "model": "google/gemma-4-31b-it",
         "key":   NVIDIA_API_KEY,
     },
     "challenger": {
-        "model": "mistralai/mistral-large-3-675b-instruct-2512",
+        "model": "openai/gpt-oss-120b",
         "key":   NVIDIA_API_KEY,
     },
     "summarizer": {
@@ -168,21 +169,31 @@ async def stream_nvidia(agent_type: str, messages: list, temp: float, top_p: flo
         "stream":      True,
     }
 
-    async with httpx.AsyncClient(timeout=180.0) as client:
-        async with client.stream("POST", NVIDIA_URL, headers=headers, json=payload) as resp:
-            resp.raise_for_status()
-            async for line in resp.aiter_lines():
-                if not line.startswith("data:"):
-                    continue
-                data = line[5:].strip()
-                if data == "[DONE]":
-                    break
-                try:
-                    tok = json.loads(data)["choices"][0]["delta"].get("content", "")
-                    if tok:
-                        yield tok
-                except Exception:
-                    pass
+    api_logger.debug(f"Starting API request for agent '{agent_type}' using model '{cfg['model']}'")
+    try:
+        async with httpx.AsyncClient(timeout=180.0) as client:
+            async with client.stream("POST", NVIDIA_URL, headers=headers, json=payload) as resp:
+                resp.raise_for_status()
+                async for line in resp.aiter_lines():
+                    if not line.startswith("data:"):
+                        continue
+                    data = line[5:].strip()
+                    if data == "[DONE]":
+                        break
+                    try:
+                        tok = json.loads(data)["choices"][0]["delta"].get("content", "")
+                        if tok:
+                            yield tok
+                    except Exception as parse_err:
+                        api_logger.warning(f"Failed to parse chunk from NVIDIA API: {parse_err}")
+    except httpx.HTTPError as http_err:
+        api_logger.error(f"HTTP error connecting to NVIDIA API for agent '{agent_type}': {http_err}")
+        raise
+    except Exception as e:
+        api_logger.error(f"Unexpected error in stream_nvidia for agent '{agent_type}': {e}")
+        raise
+    finally:
+        api_logger.debug(f"Finished API request for agent '{agent_type}'")
 
 
 # ── Repetition detector ──────────────────────────────────────────────────────
@@ -207,8 +218,11 @@ async def debate_generator(req: DebateRequest):
     last_proposer    = ""
     last_challenger  = ""
 
+    debate_logger.info(f"Starting debate on topic: '{req.topic}' for {req.rounds} rounds.")
+
     try:
         for r in range(1, req.rounds + 1):
+            debate_logger.info(f"Starting Round {r}")
             yield sse({"type": "round_start", "round": r})
 
             # ── Proposer ────────────────────────────────────────────────────
@@ -236,6 +250,7 @@ async def debate_generator(req: DebateRequest):
             yield sse({"type": "proposer_done", "round": r, "full": full_p})
             last_proposer = full_p
             proposer_history.append(full_p)
+            debate_logger.debug(f"Proposer finished round {r}.")
             
             # Summarize Proposer
             yield sse({"type": "summary_start", "agent": "p", "round": r})
@@ -248,6 +263,7 @@ async def debate_generator(req: DebateRequest):
                 full_p_sum += tok
                 yield sse({"type": "summary_chunk", "agent": "p", "round": r, "content": tok})
             yield sse({"type": "summary_done", "agent": "p", "round": r, "full": full_p_sum})
+            debate_logger.debug(f"Proposer summary finished for round {r}.")
 
 
             # Repetition check
@@ -274,6 +290,7 @@ async def debate_generator(req: DebateRequest):
             yield sse({"type": "challenger_done", "round": r, "full": full_c})
             last_challenger = full_c
             challenger_history.append(full_c)
+            debate_logger.debug(f"Challenger finished round {r}.")
             
             # Summarize Challenger
             yield sse({"type": "summary_start", "agent": "c", "round": r})
@@ -286,8 +303,10 @@ async def debate_generator(req: DebateRequest):
                 full_c_sum += tok
                 yield sse({"type": "summary_chunk", "agent": "c", "round": r, "content": tok})
             yield sse({"type": "summary_done", "agent": "c", "round": r, "full": full_c_sum})
+            debate_logger.debug(f"Challenger summary finished for round {r}.")
 
         # ── Judge synthesis ──────────────────────────────────────────────────
+        debate_logger.info("Starting judge synthesis.")
         yield sse({"type": "judge_start"})
 
         debate_summary = "\n\n".join(
@@ -311,14 +330,17 @@ async def debate_generator(req: DebateRequest):
 
         yield sse({"type": "judge_done", "full": full_j})
         yield sse({"type": "debate_done"})
+        debate_logger.info("Debate successfully finished.")
 
     except Exception as e:
+        debate_logger.exception(f"Exception occurred in debate_generator: {e}")
         yield sse({"type": "error", "message": str(e)})
 
 
 # ── Routes ───────────────────────────────────────────────────────────────────
 @app.post("/debate")
 async def start_debate(req: DebateRequest):
+    app_logger.info(f"Received /debate request for topic: '{req.topic}'")
     return StreamingResponse(
         debate_generator(req),
         media_type="text/event-stream",

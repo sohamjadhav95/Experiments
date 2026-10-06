@@ -1,0 +1,105 @@
+2026-04-30 12:55:20,808 - debate - INFO - Starting debate on topic: 'Can humans ever achieve immortality in the future till their existence' for 3 rounds.
+2026-04-30 12:55:20,809 - debate - INFO - Starting Round 1
+2026-04-30 12:55:43,699 - debate - DEBUG - Proposer finished round 1.
+2026-04-30 12:55:45,472 - debate - DEBUG - Proposer summary finished for round 1.
+2026-04-30 13:01:33,848 - debate - ERROR - Exception occurred in debate_generator: peer closed connection without sending complete message body (incomplete chunked read)
+Traceback (most recent call last):
+  File "E:\Projects\Experiments\Mult-Agent Discussion\env\Lib\site-packages\httpx\_transports\default.py", line 101, in map_httpcore_exceptions
+    yield
+  File "E:\Projects\Experiments\Mult-Agent Discussion\env\Lib\site-packages\httpx\_transports\default.py", line 271, in __aiter__
+    async for part in self._httpcore_stream:
+        yield part
+  File "E:\Projects\Experiments\Mult-Agent Discussion\env\Lib\site-packages\httpcore\_async\connection_pool.py", line 407, in __aiter__
+    raise exc from None
+  File "E:\Projects\Experiments\Mult-Agent Discussion\env\Lib\site-packages\httpcore\_async\connection_pool.py", line 403, in __aiter__
+    async for part in self._stream:
+        yield part
+  File "E:\Projects\Experiments\Mult-Agent Discussion\env\Lib\site-packages\httpcore\_async\http11.py", line 342, in __aiter__
+    raise exc
+  File "E:\Projects\Experiments\Mult-Agent Discussion\env\Lib\site-packages\httpcore\_async\http11.py", line 334, in __aiter__
+    async for chunk in self._connection._receive_response_body(**kwargs):
+        yield chunk
+  File "E:\Projects\Experiments\Mult-Agent Discussion\env\Lib\site-packages\httpcore\_async\http11.py", line 203, in _receive_response_body
+    event = await self._receive_event(timeout=timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Projects\Experiments\Mult-Agent Discussion\env\Lib\site-packages\httpcore\_async\http11.py", line 213, in _receive_event
+    with map_exceptions({h11.RemoteProtocolError: RemoteProtocolError}):
+         ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "E:\Projects\Experiments\Mult-Agent Discussion\env\Lib\site-packages\httpcore\_exceptions.py", line 14, in map_exceptions
+    raise to_exc(exc) from exc
+httpcore.RemoteProtocolError: peer closed connection without sending complete message body (incomplete chunked read)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "e:\Projects\Experiments\Mult-Agent Discussion\main.py", line 286, in debate_generator
+    async for tok in stream_nvidia("challenger", c_msgs, req.temp_challenger, 0.8):
+        full_c += tok
+        yield sse({"type": "challenger_chunk", "round": r, "content": tok})
+  File "e:\Projects\Experiments\Mult-Agent Discussion\main.py", line 177, in stream_nvidia
+    async for line in resp.aiter_lines():
+    ...<10 lines>...
+            api_logger.warning(f"Failed to parse chunk from NVIDIA API: {parse_err}")
+  File "E:\Projects\Experiments\Mult-Agent Discussion\env\Lib\site-packages\httpx\_models.py", line 1031, in aiter_lines
+    async for text in self.aiter_text():
+        for line in decoder.decode(text):
+            yield line
+  File "E:\Projects\Experiments\Mult-Agent Discussion\env\Lib\site-packages\httpx\_models.py", line 1018, in aiter_text
+    async for byte_content in self.aiter_bytes():
+    ...<2 lines>...
+            yield chunk
+  File "E:\Projects\Experiments\Mult-Agent Discussion\env\Lib\site-packages\httpx\_models.py", line 997, in aiter_bytes
+    async for raw_bytes in self.aiter_raw():
+    ...<2 lines>...
+            yield chunk
+  File "E:\Projects\Experiments\Mult-Agent Discussion\env\Lib\site-packages\httpx\_models.py", line 1055, in aiter_raw
+    async for raw_stream_bytes in self.stream:
+    ...<2 lines>...
+            yield chunk
+  File "E:\Projects\Experiments\Mult-Agent Discussion\env\Lib\site-packages\httpx\_client.py", line 176, in __aiter__
+    async for chunk in self._stream:
+        yield chunk
+  File "E:\Projects\Experiments\Mult-Agent Discussion\env\Lib\site-packages\httpx\_transports\default.py", line 270, in __aiter__
+    with map_httpcore_exceptions():
+         ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Python314\Lib\contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "E:\Projects\Experiments\Mult-Agent Discussion\env\Lib\site-packages\httpx\_transports\default.py", line 118, in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+httpx.RemoteProtocolError: peer closed connection without sending complete message body (incomplete chunked read)
+2026-04-30 13:04:50,707 - debate - INFO - Starting debate on topic: 'Can humans ever achieve immortality in the future till their existence' for 3 rounds.
+2026-04-30 13:04:50,707 - debate - INFO - Starting Round 1
+2026-04-30 13:06:18,635 - debate - DEBUG - Proposer finished round 1.
+2026-04-30 13:06:20,145 - debate - DEBUG - Proposer summary finished for round 1.
+2026-04-30 13:06:25,136 - debate - DEBUG - Challenger finished round 1.
+2026-04-30 13:06:26,212 - debate - DEBUG - Challenger summary finished for round 1.
+2026-04-30 13:06:26,212 - debate - INFO - Starting Round 2
+2026-04-30 13:07:02,747 - debate - INFO - Starting debate on topic: 'Can humans ever achieve immortality in the future till their existence' for 3 rounds.
+2026-04-30 13:07:02,748 - debate - INFO - Starting Round 1
+2026-04-30 13:08:05,036 - debate - DEBUG - Proposer finished round 1.
+2026-04-30 13:08:06,936 - debate - DEBUG - Proposer summary finished for round 1.
+2026-04-30 13:08:12,892 - debate - DEBUG - Challenger finished round 1.
+2026-04-30 13:08:14,663 - debate - DEBUG - Challenger summary finished for round 1.
+2026-04-30 13:08:14,663 - debate - INFO - Starting Round 2
+2026-04-30 13:10:15,287 - debate - INFO - Starting debate on topic: 'Can humans ever achieve immortality in the future till their existence' for 3 rounds.
+2026-04-30 13:10:15,288 - debate - INFO - Starting Round 1
+2026-04-30 13:10:50,907 - debate - DEBUG - Proposer finished round 1.
+2026-04-30 13:10:52,275 - debate - DEBUG - Proposer summary finished for round 1.
+2026-04-30 13:11:00,761 - debate - DEBUG - Challenger finished round 1.
+2026-04-30 13:11:02,850 - debate - DEBUG - Challenger summary finished for round 1.
+2026-04-30 13:11:02,850 - debate - INFO - Starting Round 2
+2026-04-30 13:12:28,673 - debate - DEBUG - Proposer finished round 2.
+2026-04-30 13:12:30,694 - debate - DEBUG - Proposer summary finished for round 2.
+2026-04-30 13:12:39,596 - debate - DEBUG - Challenger finished round 2.
+2026-04-30 13:12:41,099 - debate - DEBUG - Challenger summary finished for round 2.
+2026-04-30 13:12:41,099 - debate - INFO - Starting Round 3
+2026-04-30 13:14:44,512 - debate - DEBUG - Proposer finished round 3.
+2026-04-30 13:14:45,810 - debate - DEBUG - Proposer summary finished for round 3.
+2026-04-30 13:14:52,576 - debate - DEBUG - Challenger finished round 3.
+2026-04-30 13:14:54,404 - debate - DEBUG - Challenger summary finished for round 3.
+2026-04-30 13:14:54,404 - debate - INFO - Starting judge synthesis.
+2026-04-30 13:16:04,540 - debate - INFO - Debate successfully finished.
